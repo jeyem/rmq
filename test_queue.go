@@ -17,61 +17,39 @@ func (queue *TestQueue) String() string {
 	return queue.name
 }
 
-func (queue *TestQueue) Publish(payload string) bool {
-	queue.LastDeliveries = append(queue.LastDeliveries, payload)
-	return true
-}
-
-func (queue *TestQueue) PublishBytes(payload []byte) bool {
-	return queue.Publish(string(payload))
-}
-
-func (queue *TestQueue) SetPushQueue(pushQueue Queue) {
-}
-
-func (queue *TestQueue) StartConsuming(prefetchLimit int, pollDuration time.Duration) bool {
-	return true
-}
-
-func (queue *TestQueue) StopConsuming() <-chan struct{} {
+func (queue *TestQueue) Publish(payload ...string) error {
+	queue.LastDeliveries = append(queue.LastDeliveries, payload...)
 	return nil
 }
 
-func (queue *TestQueue) AddConsumer(tag string, consumer Consumer) string {
-	return ""
+func (queue *TestQueue) PublishBytes(payload ...[]byte) error {
+	stringifiedBytes := make([]string, len(payload))
+	for i, b := range payload {
+		stringifiedBytes[i] = string(b)
+	}
+	return queue.Publish(stringifiedBytes...)
 }
 
-func (queue *TestQueue) AddConsumerFunc(tag string, consumerFunc ConsumerFunc) string {
-	return ""
+func (*TestQueue) SetPushQueue(Queue)                                   { panic(errorNotSupported) }
+func (*TestQueue) StartConsuming(int64, time.Duration) error            { panic(errorNotSupported) }
+func (*TestQueue) StopConsuming() <-chan struct{}                       { panic(errorNotSupported) }
+func (*TestQueue) AddConsumer(string, Consumer) (string, error)         { panic(errorNotSupported) }
+func (*TestQueue) AddConsumerFunc(string, ConsumerFunc) (string, error) { panic(errorNotSupported) }
+func (*TestQueue) AddBatchConsumer(string, int64, time.Duration, BatchConsumer) (string, error) {
+	panic(errorNotSupported)
 }
+func (*TestQueue) ReturnUnacked(int64) (int64, error)  { panic(errorNotSupported) }
+func (*TestQueue) ReturnRejected(int64) (int64, error) { panic(errorNotSupported) }
+func (*TestQueue) PurgeReady() (int64, error)          { panic(errorNotSupported) }
+func (*TestQueue) PurgeRejected() (int64, error)       { panic(errorNotSupported) }
+func (*TestQueue) Destroy() (int64, int64, error)      { panic(errorNotSupported) }
+func (*TestQueue) closeInStaleConnection() error       { panic(errorNotSupported) }
+func (*TestQueue) readyCount() (int64, error)          { panic(errorNotSupported) }
+func (*TestQueue) unackedCount() (int64, error)        { panic(errorNotSupported) }
+func (*TestQueue) rejectedCount() (int64, error)       { panic(errorNotSupported) }
+func (*TestQueue) getConsumers() ([]string, error)     { panic(errorNotSupported) }
 
-func (queue *TestQueue) AddBatchConsumer(tag string, batchSize int, consumer BatchConsumer) string {
-	return ""
-}
-
-func (queue *TestQueue) AddBatchConsumerWithTimeout(tag string, batchSize int, timeout time.Duration, consumer BatchConsumer) string {
-	return ""
-}
-
-func (queue *TestQueue) ReturnRejected(count int) int {
-	return 0
-}
-
-func (queue *TestQueue) ReturnAllRejected() int {
-	return 0
-}
-
-func (queue *TestQueue) PurgeReady() int {
-	return 0
-}
-
-func (queue *TestQueue) PurgeRejected() int {
-	return 0
-}
-
-func (queue *TestQueue) Close() bool {
-	return false
-}
+// test helper
 
 func (queue *TestQueue) Reset() {
 	queue.LastDeliveries = []string{}
